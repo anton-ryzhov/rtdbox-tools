@@ -1,0 +1,71 @@
+#!/bin/sh
+
+INSTALLPATH="/usr/local/etc"
+APPENDFILE=rcS
+RETRIES=30
+HDD1PATH="/tmp/hdd/root/media"
+
+error()
+{
+  echo $1
+  exit 1
+}
+
+install()
+{
+  echo Installing mounter...
+  [ -d "$INSTALLPATH" ] || error "Directory $INSTALLPATH not found"
+
+  # Copy and chmod $0 file
+  INSTALLPATH="`cd "$INSTALLPATH"; pwd`"
+  cp "$0" "$INSTALLPATH/mounter"
+  cd "$INSTALLPATH"
+  chmod 755 mounter
+
+  # Append rcS file if necessary
+  [ -f "$APPENDFILE" ] || error "File $APPENDFILE not found"
+  if ! grep "$INSTALLPATH/mounter" "$APPENDFILE" >/dev/null
+  then
+    echo Appending "$APPENDFILE"...
+    echo >>"$APPENDFILE"
+    echo "$INSTALLPATH/mounter watch &" >>"$APPENDFILE"
+  fi
+
+  echo Ok!
+}
+
+watch()
+{
+  echo "Mounter: Start" >>/tmp/rcex.log
+  N=0
+
+  until [ "`mount | grep "/dev/scsi/host0" | grep "root\|HDD1" | wc -l`" -ge 2 ]
+  do
+    echo Mounter: Wait for mounts, try \# $N >>/tmp/rcex.log
+    let N=N+1
+    if [ "$N" -eq "$RETRIES" ]
+    then
+      echo Mounter: Waiting timeout >>/tmp/rcex.log
+      return 1
+    fi
+    sleep 3
+  done
+  sleep 3 # some extra wait
+
+  # do remounts
+  echo "Mounter: Do remounts" >>/tmp/rcex.log
+
+  # $HDD1PATH to HDD
+  [ -d "$HDD1PATH" ] || mkdir -p "$HDD1PATH"
+  [ -d "$HDD1PATH" ] && mount --bind "$HDD1PATH" /tmp/hdd/volumes/HDD1
+
+  # Torrent config in root
+  mkdir /tmp/usbmounts/ext3
+  [ -d "/tmp/usbmounts/ext3" ] && mount --bind /tmp/hdd/root /tmp/usbmounts/ext3
+
+  # Fix /opt link
+  ln -s /tmp/hdd/root /tmp/opt
+}
+
+echo "Mounter: $1" >>/tmp/rcex.log
+[ "$1" = "watch" ] && watch || install
