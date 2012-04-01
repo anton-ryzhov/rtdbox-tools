@@ -33,6 +33,7 @@ install()
   then
     echo Appending "$APPENDFILE"...
     echo >>"$APPENDFILE"
+    cp "$APPENDFILE" "$APPENDFILE".bak
     echo "$INSTALLPATH/mounter watch &" >>"$APPENDFILE"
   fi
 
