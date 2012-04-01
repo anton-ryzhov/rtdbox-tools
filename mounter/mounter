@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# Ext3 to HDD1 and /opt mounter
+#
+# For Realtek RTD1283-based players
+# Anton Ryzhov <anton@ryzhov.me>
+
 INSTALLPATH="/usr/local/etc"
 APPENDFILE=rcS
 RETRIES=30
