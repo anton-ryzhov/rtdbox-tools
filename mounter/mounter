@@ -65,6 +65,9 @@ watch()
   [ -d "$HDD1PATH" ] || mkdir -p "$HDD1PATH"
   [ -d "$HDD1PATH" ] && mount --bind "$HDD1PATH" /tmp/hdd/volumes/HDD1
 
+  # Remove unused folders
+  rmdir "$HDD1PATH/image" "$HDD1PATH/movie" "$HDD1PATH/music" "$HDD1PATH/REC"
+
   # Torrent config in root
   mkdir /tmp/usbmounts/ext3
   [ -d "/tmp/usbmounts/ext3" ] && mount --bind /tmp/hdd/root /tmp/usbmounts/ext3
