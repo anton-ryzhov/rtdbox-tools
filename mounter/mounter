@@ -4,6 +4,9 @@
 #
 # For Realtek RTD1283-based players
 # Anton Ryzhov <anton@ryzhov.me>
+#
+# Source: https://github.com/anton-ryzhov/rtdbox-tools
+
 
 INSTALLPATH="/usr/local/etc"
 APPENDFILE=rcS
