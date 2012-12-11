@@ -15,69 +15,69 @@ HDD1PATH="/tmp/hdd/root/media"
 
 error()
 {
-  echo $1 >&2
-  exit 1
+	echo $1 >&2
+	exit 1
 }
 
 install()
 {
-  echo Installing mounter...
-  [ -d "$INSTALLPATH" ] || error "Directory $INSTALLPATH not found"
+	echo Installing mounter...
+	[ -d "$INSTALLPATH" ] || error "Directory $INSTALLPATH not found"
 
-  # Copy and chmod $0 file
-  INSTALLPATH="`cd "$INSTALLPATH"; pwd`"
-  cp "$0" "$INSTALLPATH/mounter"
-  cd "$INSTALLPATH"
-  chmod 755 mounter
+	# Copy and chmod $0 file
+	INSTALLPATH="`cd "$INSTALLPATH"; pwd`"
+	cp "$0" "$INSTALLPATH/mounter"
+	cd "$INSTALLPATH"
+	chmod 755 mounter
 
-  # Append rcS file if necessary
-  [ -f "$APPENDFILE" ] || error "File $APPENDFILE not found"
-  if ! grep "$INSTALLPATH/mounter" "$APPENDFILE" >/dev/null
-  then
-    echo Appending "$APPENDFILE"...
-    echo >>"$APPENDFILE"
-    cp "$APPENDFILE" "$APPENDFILE".bak
-    echo "$INSTALLPATH/mounter watch &" >>"$APPENDFILE"
-  fi
+	# Append rcS file if necessary
+	[ -f "$APPENDFILE" ] || error "File $APPENDFILE not found"
+	if ! grep "$INSTALLPATH/mounter" "$APPENDFILE" >/dev/null
+	then
+		echo Appending "$APPENDFILE"...
+		echo >>"$APPENDFILE"
+		cp "$APPENDFILE" "$APPENDFILE".bak
+		echo "$INSTALLPATH/mounter watch &" >>"$APPENDFILE"
+	fi
 
-  echo Ok!
+	echo Ok!
 }
 
 watch()
 {
-  exec >>/tmp/rcex.log 2>&1
-  echo "Mounter: Start"
-  N=0
+	exec >>/tmp/rcex.log 2>&1
+	echo "Mounter: Start"
+	N=0
 
-  until [ "`mount | grep "/dev/scsi/host0" | grep "root\|HDD1" | wc -l`" -ge 2 ]
-  do
-    echo Mounter: Wait for mounts, try \# $N
-    let N=N+1
-    if [ "$N" -eq "$RETRIES" ]
-    then
-      echo Mounter: Waiting timeout
-      return 1
-    fi
-    sleep 3
-  done
-  sleep 3 # some extra wait
+	until [ "`mount | grep "/dev/scsi/host0" | grep "root\|HDD1" | wc -l`" -ge 2 ]
+	do
+		echo Mounter: Wait for mounts, try \# $N
+		let N=N+1
+		if [ "$N" -eq "$RETRIES" ]
+		then
+			echo Mounter: Waiting timeout
+			return 1
+		fi
+		sleep 3
+	done
+	sleep 3 # some extra wait
 
-  # do remounts
-  echo "Mounter: Do remounts"
+	# do remounts
+	echo "Mounter: Do remounts"
 
-  # $HDD1PATH to HDD
-  [ -d "$HDD1PATH" ] || mkdir -p "$HDD1PATH"
-  [ -d "$HDD1PATH" ] && mount --bind "$HDD1PATH" /tmp/hdd/volumes/HDD1
+	# $HDD1PATH to HDD
+	[ -d "$HDD1PATH" ] || mkdir -p "$HDD1PATH"
+	[ -d "$HDD1PATH" ] && mount --bind "$HDD1PATH" /tmp/hdd/volumes/HDD1
 
-  # Remove unused folders
-  rmdir "$HDD1PATH/image" "$HDD1PATH/movie" "$HDD1PATH/music" "$HDD1PATH/REC" 2>/dev/null
+	# Remove unused folders
+	rmdir "$HDD1PATH/image" "$HDD1PATH/movie" "$HDD1PATH/music" "$HDD1PATH/REC" 2>/dev/null
 
-  # Torrent config in root
-  mkdir /tmp/usbmounts/ext3
-  [ -d "/tmp/usbmounts/ext3" ] && mount --bind /tmp/hdd/root /tmp/usbmounts/ext3
+	# Torrent config in root
+	mkdir /tmp/usbmounts/ext3
+	[ -d "/tmp/usbmounts/ext3" ] && mount --bind /tmp/hdd/root /tmp/usbmounts/ext3
 
-  # Fix /opt link
-  ln -s /tmp/hdd/root /tmp/opt
+	# Fix /opt link
+	ln -s /tmp/hdd/root /tmp/opt
 }
 
 echo "Mounter: $1"
